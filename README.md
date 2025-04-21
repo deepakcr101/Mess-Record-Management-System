@@ -68,12 +68,12 @@ Make sure you have the following installed:
 
 ### 🔽 Cloning the Repository
 
-```bash
+bash
 git clone <repository_url>
 cd mess-management-system
 Replace <repository_url> with your GitHub clone URL.
 
-🗃️ Database Setup
+## 🗃️ Database Setup
 Start your MySQL server.
 
 Create the database:
@@ -84,7 +84,7 @@ Edit
 CREATE DATABASE mess_db;
 Update src/main/resources/application.properties:
 
-properties
+### properties
 Copy
 Edit
 spring.datasource.url=jdbc:mysql://localhost:3306/mess_db?useSSL=false&serverTimezone=UTC
@@ -94,7 +94,7 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 Replace your_mysql_username and your_mysql_password with your MySQL credentials.
 
-▶️ Running the Application
+## ▶️ Running the Application
 In your terminal:
 
 bash
@@ -107,7 +107,8 @@ arduino
 Copy
 Edit
 http://localhost:8080
-📋 Usage
+
+## 📋 Usage
 Login Page: Visit http://localhost:8080
 
 Admin Login:
@@ -124,7 +125,7 @@ Password: Chosen password during registration
 
 Register: New students can register at http://localhost:8080/register
 
-🔮 Future Enhancements
+## 🔮 Future Enhancements
 Admin approval for new registrations
 
 Automated bill generation and status updates
@@ -139,10 +140,10 @@ Student dashboard with bill & payment tracking
 
 Admin panel for managing student records
 
-🙌 Contributions
+## 🙌 Contributions
 Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
-📄 License
+## 📄 License
 This project is for educational purposes and currently does not include a license. You may add one as needed.
 
 Made with ☕ and 💻 by Deepak
