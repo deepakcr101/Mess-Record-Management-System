@@ -74,7 +74,7 @@ git clone <repository_url>
 cd mess-management-system
 Replace <repository_url> with your actual GitHub repository URL.
 
-## 🛢️ Database Setup
+🛢️ Database Setup
 Ensure your MySQL server is running and create the database:
 
 sql
@@ -83,7 +83,7 @@ Edit
 CREATE DATABASE mess_db;
 Then update the database configuration in src/main/resources/application.properties:
 
-### properties
+properties
 Copy
 Edit
 spring.datasource.url=jdbc:mysql://localhost:3306/mess_db?useSSL=false&serverTimezone=UTC
@@ -93,7 +93,7 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 spring.jpa.hibernate.ddl-auto=update
 Replace your_mysql_username and your_mysql_password with your MySQL credentials.
 
-## ▶️ Running the Application
+ ▶️ Running the Application
 In the project root directory, run:
 
 bash
@@ -104,19 +104,19 @@ This will start the application and open it at:
 
 http://localhost:8080
 
-## 💻 Usage
-### 🔐 Admin Login
+ 💻 Usage
+ 🔐 Admin Login
 Username: admin_001
 
 Password: adminpass (or your own password corresponding to the hashed one in the DB)
 
-### 👨‍🎓 Student Login
+ 👨‍🎓 Student Login
 Use your registration number as the username and your chosen password.
 
-### 📝 Student Registration
+ 📝 Student Registration
 Visit: http://localhost:8080/register
 
-## 🔮 Future Enhancements
+ 🔮 Future Enhancements
 Admin workflow for approving new student registrations.
 
 Automated scheduled bill generation and account status updates.
