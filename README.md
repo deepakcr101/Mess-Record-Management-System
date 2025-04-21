@@ -1,10 +1,10 @@
 # 🍽️ Mess Management System
 
-A web-based application built with **Spring Boot** to manage mess operations, including user authentication, menu management, billing, reporting, and managing student account status based on bills.
+A web-based application built with **Spring Boot** to streamline mess operations in educational institutions. It handles **user authentication**, **menu and billing management**, **mess attendance tracking**, and more, with role-based access for admins and students.
 
 ---
 
-## 📑 Table of Contents
+## 📚 Table of Contents
 
 - [Features](#features)
 - [Technology Stack](#technology-stack)
@@ -20,43 +20,42 @@ A web-based application built with **Spring Boot** to manage mess operations, in
 
 ## ✅ Features
 
-- **User Authentication & Authorization**: Separate roles for Admin and Student users using Spring Security.
-- **Student Registration**: Allows new students to register accounts.
-- **Admin Dashboard**: Centralized view for administrators.
-- **Menu Management**: Admin interface to add, edit, and delete daily/weekly menu items.
-- **Billing Period Management**: Admin functionality to generate bills based on mess consumption records.
-- **View Generated Bills**: Admin view to see all generated bills.
-- **Financial Summary Report**: Shows total billed, total paid, and total due amounts.
-- **Account Locking**: Automatically locks student accounts with outstanding bills.
-- **Student Profile**: Students can view and update contact information.
-- **Mess Record Tracking**: Implicitly handled through billing.
+- 🔐 **User Authentication & Authorization**: Secure login with roles (Admin / Student) using Spring Security.
+- 📝 **Student Registration**: Easy self-registration for new students.
+- 📊 **Admin Dashboard**: Central hub for managing mess operations.
+- 🍽️ **Menu Management**: CRUD interface for daily/weekly menu.
+- 💰 **Billing Period Management**: Generate bills based on consumption records.
+- 📄 **View Generated Bills**: Quick overview of student billing.
+- 📈 **Financial Summary Report**: Track total billed, paid, and due amounts.
+- 🔒 **Account Locking**: Automatically lock accounts with overdue bills.
+- 👤 **Student Profile**: View and update contact information.
+- 🧾 **Mess Record Tracking**: Tracks presence/consumption for billing.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Backend
-- Java
+**Backend:**
+- Java 17+
 - Spring Boot
 - Spring Security
-- Spring Data JPA
-- Hibernate
+- Spring Data JPA (Hibernate)
 
-### Database
+**Database:**
 - MySQL
 
-### Frontend
-- Thymeleaf
-- Bootstrap
+**Frontend:**
+- Thymeleaf (HTML templating)
+- Bootstrap (for UI styling)
 
-### Build Tool
+**Build Tool:**
 - Maven
 
 ---
 
-## 📦 Prerequisites
+## ⚙️ Prerequisites
 
-Before running the application, ensure you have the following installed:
+Make sure you have the following installed:
 
 - Java Development Kit (JDK) 17 or higher
 - Apache Maven
@@ -67,21 +66,23 @@ Before running the application, ensure you have the following installed:
 
 ## 🚀 Getting Started
 
-### 🔁 Cloning the Repository
+### 🔽 Cloning the Repository
 
 ```bash
 git clone <repository_url>
 cd mess-management-system
-Replace <repository_url> with your actual GitHub repository URL.
+Replace <repository_url> with your GitHub clone URL.
 
-🛢️ Database Setup
-Ensure your MySQL server is running and create the database:
+🗃️ Database Setup
+Start your MySQL server.
+
+Create the database:
 
 sql
 Copy
 Edit
 CREATE DATABASE mess_db;
-Then update the database configuration in src/main/resources/application.properties:
+Update src/main/resources/application.properties:
 
 properties
 Copy
@@ -89,45 +90,64 @@ Edit
 spring.datasource.url=jdbc:mysql://localhost:3306/mess_db?useSSL=false&serverTimezone=UTC
 spring.datasource.username=your_mysql_username
 spring.datasource.password=your_mysql_password
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 Replace your_mysql_username and your_mysql_password with your MySQL credentials.
 
- ▶️ Running the Application
-In the project root directory, run:
+▶️ Running the Application
+In your terminal:
 
 bash
 Copy
 Edit
 ./mvnw spring-boot:run
-This will start the application and open it at:
+Once the server is up, visit:
 
+arduino
+Copy
+Edit
 http://localhost:8080
+📋 Usage
+Login Page: Visit http://localhost:8080
 
- 💻 Usage
- 🔐 Admin Login
+Admin Login:
+
 Username: admin_001
 
-Password: adminpass (or your own password corresponding to the hashed one in the DB)
+Password: adminpass (or your manually inserted password hash)
 
- 👨‍🎓 Student Login
-Use your registration number as the username and your chosen password.
+Student Login:
 
- 📝 Student Registration
-Visit: http://localhost:8080/register
+Username: Registration number
 
- 🔮 Future Enhancements
-Admin workflow for approving new student registrations.
+Password: Chosen password during registration
 
-Automated scheduled bill generation and account status updates.
+Register: New students can register at http://localhost:8080/register
 
-Email or SMS notifications for bills and payments.
+🔮 Future Enhancements
+Admin approval for new registrations
 
-Online payment gateway integration.
+Automated bill generation and status updates
 
-More detailed reports (e.g., daily attendance, individual billing history).
+Email/SMS notifications
 
-Student interface for bills, payment history, and consumption tracking.
+Online payment gateway integration
 
-Dedicated admin pages for managing students.
+Enhanced reporting (billing history, attendance reports)
+
+Student dashboard with bill & payment tracking
+
+Admin panel for managing student records
+
+🙌 Contributions
+Contributions are welcome! Feel free to fork the repo and submit a pull request.
+
+📄 License
+This project is for educational purposes and currently does not include a license. You may add one as needed.
+
+Made with ☕ and 💻 by Deepak
+
+yaml
+Copy
+Edit
 
