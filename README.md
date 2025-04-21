@@ -140,15 +140,11 @@ Student dashboard with bill & payment tracking
 
 Admin panel for managing student records
 
+## Made with ☕ and 💻 by Deepak
 ## 🙌 Contributions
 Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 ## 📄 License
 This project is for educational purposes and currently does not include a license. You may add one as needed.
 
-Made with ☕ and 💻 by Deepak
-
-yaml
-Copy
-Edit
 
