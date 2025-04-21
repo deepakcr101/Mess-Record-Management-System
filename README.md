@@ -1,101 +1,89 @@
-🍽️ Mess Management System
-A web-based application built with Spring Boot to manage mess operations, including user authentication, menu management, billing, reporting, and managing student account status based on bills.
+# 🍽️ Mess Management System
 
-📑 Table of Contents
-Features
+A web-based application built with **Spring Boot** to manage mess operations, including user authentication, menu management, billing, reporting, and managing student account status based on bills.
 
-Technology Stack
+---
 
-Prerequisites
+## 📑 Table of Contents
 
-Getting Started
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [Cloning the Repository](#cloning-the-repository)
+  - [Database Setup](#database-setup)
+  - [Running the Application](#running-the-application)
+- [Usage](#usage)
+- [Future Enhancements](#future-enhancements)
 
-Cloning the Repository
+---
 
-Database Setup
+## ✅ Features
 
-Running the Application
+- **User Authentication & Authorization**: Separate roles for Admin and Student users using Spring Security.
+- **Student Registration**: Allows new students to register accounts.
+- **Admin Dashboard**: Centralized view for administrators.
+- **Menu Management**: Admin interface to add, edit, and delete daily/weekly menu items.
+- **Billing Period Management**: Admin functionality to generate bills based on mess consumption records.
+- **View Generated Bills**: Admin view to see all generated bills.
+- **Financial Summary Report**: Shows total billed, total paid, and total due amounts.
+- **Account Locking**: Automatically locks student accounts with outstanding bills.
+- **Student Profile**: Students can view and update contact information.
+- **Mess Record Tracking**: Implicitly handled through billing.
 
-Usage
+---
 
-Future Enhancements
+## 🛠️ Technology Stack
 
-✅ Features
-User Authentication & Authorization: Separate roles for Admin and Student users using Spring Security.
+### Backend
+- Java
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- Hibernate
 
-Student Registration: Allows new students to register accounts.
+### Database
+- MySQL
 
-Admin Dashboard: Centralized view for administrators.
+### Frontend
+- Thymeleaf
+- Bootstrap
 
-Menu Management: Admin interface to add, edit, and delete daily/weekly menu items.
+### Build Tool
+- Maven
 
-Billing Period Management: Admin functionality to generate bills based on mess consumption records.
+---
 
-View Generated Bills: Admin view to see all generated bills.
+## 📦 Prerequisites
 
-Financial Summary Report: Shows total billed, total paid, and total due amounts.
+Before running the application, ensure you have the following installed:
 
-Account Locking: Automatically locks student accounts with outstanding bills.
+- Java Development Kit (JDK) 17 or higher
+- Apache Maven
+- MySQL Server
+- Git
 
-Student Profile: Students can view and update contact information.
+---
 
-Mess Record Tracking: Implicitly handled through billing.
+## 🚀 Getting Started
 
-🛠️ Technology Stack
-Backend
-Java
+### 🔁 Cloning the Repository
 
-Spring Boot
-
-Spring Security
-
-Spring Data JPA
-
-Hibernate
-
-Database
-MySQL
-
-Frontend
-Thymeleaf
-
-Bootstrap
-
-Build Tool
-Maven
-
-📦 Prerequisites
-Make sure the following are installed:
-
-Java Development Kit (JDK) 17 or higher
-
-Apache Maven
-
-MySQL Server
-
-Git
-
-🚀 Getting Started
-🔁 Cloning the Repository
-bash
-Copy
-Edit
+```bash
 git clone <repository_url>
 cd mess-management-system
-Replace <repository_url> with the actual URL of your GitHub repository.
+Replace <repository_url> with your actual GitHub repository URL.
 
-🛢️ Database Setup
-Ensure MySQL server is running.
-
-Create the database:
+## 🛢️ Database Setup
+Ensure your MySQL server is running and create the database:
 
 sql
 Copy
 Edit
 CREATE DATABASE mess_db;
-Update src/main/resources/application.properties:
+Then update the database configuration in src/main/resources/application.properties:
 
-properties
+### properties
 Copy
 Edit
 spring.datasource.url=jdbc:mysql://localhost:3306/mess_db?useSSL=false&serverTimezone=UTC
@@ -103,45 +91,43 @@ spring.datasource.username=your_mysql_username
 spring.datasource.password=your_mysql_password
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 spring.jpa.hibernate.ddl-auto=update
-Replace your_mysql_username and your_mysql_password with your actual credentials.
+Replace your_mysql_username and your_mysql_password with your MySQL credentials.
 
-▶️ Running the Application
-In the terminal, from the root project directory:
+## ▶️ Running the Application
+In the project root directory, run:
 
 bash
 Copy
 Edit
 ./mvnw spring-boot:run
-The application will start on:
-👉 http://localhost:8080
+This will start the application and open it at:
 
-💻 Usage
-Login at http://localhost:8080
+http://localhost:8080
 
-Admin Login:
+## 💻 Usage
+### 🔐 Admin Login
 Username: admin_001
 
-Password: adminpass (or the plain password matching your stored hash)
+Password: adminpass (or your own password corresponding to the hashed one in the DB)
 
-Student Login:
-Use your registration number as username and corresponding password.
+### 👨‍🎓 Student Login
+Use your registration number as the username and your chosen password.
 
-Register a New Student:
-Visit http://localhost:8080/register
+### 📝 Student Registration
+Visit: http://localhost:8080/register
 
-🔮 Future Enhancements
+## 🔮 Future Enhancements
 Admin workflow for approving new student registrations.
 
-Automated bill generation and account status updates.
+Automated scheduled bill generation and account status updates.
 
-Email/SMS notifications for bills and payments.
+Email or SMS notifications for bills and payments.
 
 Online payment gateway integration.
 
-Detailed reporting: attendance, billing history.
+More detailed reports (e.g., daily attendance, individual billing history).
 
-Student interface for payment history and consumption.
+Student interface for bills, payment history, and consumption tracking.
 
-Advanced admin panels for student management.
-
+Dedicated admin pages for managing students.
 
