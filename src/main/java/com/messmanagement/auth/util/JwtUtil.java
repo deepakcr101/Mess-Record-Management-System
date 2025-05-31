@@ -1,19 +1,20 @@
 package com.messmanagement.auth.util;
 
-import com.messmanagement.user.entity.User; // Assuming UserDetails might be an interface User implements
+import java.security.Key; // Assuming UserDetails might be an interface User implements
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
+import org.springframework.beans.factory.annotation.Value; // Spring Security's UserDetails
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails; // Spring Security's UserDetails
-import org.springframework.stereotype.Component;
-
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class JwtUtil {
@@ -72,15 +73,21 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername(), refreshTokenExpirationMs);
     }
 
+    public String extractJti(String token) {
+        return extractClaim(token, Claims::getId);
+    }
+
     private String createToken(Map<String, Object> claims, String subject, long expirationTimeMs) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject) // Typically the username (email in our case)
+                .setSubject(subject)
+                .setId(UUID.randomUUID().toString()) // Add JTI (JWT ID)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTimeMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

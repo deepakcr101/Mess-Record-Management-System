@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.messmanagement.user.dto.AdminCreateUserRequestDTO;
 import com.messmanagement.user.dto.AdminUpdateUserRequestDTO;
 import com.messmanagement.user.dto.UserResponseDTO;
+import com.messmanagement.user.dto.UserUpdateRequestDTO;
 import com.messmanagement.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -84,4 +85,17 @@ public class UserController {
         return ResponseEntity.noContent().build(); // HTTP 204 No Content on successful deletion
     }
     
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()") // Ensures the user is authenticated
+    public ResponseEntity<UserResponseDTO> updateCurrentUserProfile(
+            Authentication authentication,
+            /* @Valid */ @RequestBody UserUpdateRequestDTO updateRequest) {
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername(); // Get email of the authenticated user
+
+        UserResponseDTO updatedUserProfile = userService.updateUserProfile(email, updateRequest);
+        return ResponseEntity.ok(updatedUserProfile);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.messmanagement.user.service;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.context.annotation.Lazy;
@@ -9,8 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority; // Import @Lazy
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority; // Import @Lazy
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,12 +24,15 @@ import org.springframework.util.StringUtils;
 import com.messmanagement.auth.dto.LoginRequestDTO;
 import com.messmanagement.auth.dto.LoginResponseDTO;
 import com.messmanagement.auth.dto.TokenRefreshResponseDTO;
+import com.messmanagement.auth.entity.RevokedToken;
+import com.messmanagement.auth.repository.RevokedTokenRepository;
 import com.messmanagement.auth.util.JwtUtil;
 import com.messmanagement.common.exception.ResourceNotFoundException;
 import com.messmanagement.user.dto.AdminCreateUserRequestDTO;
 import com.messmanagement.user.dto.AdminUpdateUserRequestDTO;
 import com.messmanagement.user.dto.UserRegistrationRequestDTO;
 import com.messmanagement.user.dto.UserResponseDTO;
+import com.messmanagement.user.dto.UserUpdateRequestDTO;
 import com.messmanagement.user.entity.Role;
 import com.messmanagement.user.entity.User;
 import com.messmanagement.user.repository.UserRepository;
@@ -41,16 +45,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager; // Will be lazily injected
     private final JwtUtil jwtUtil;
+private final RevokedTokenRepository revokedTokenRepository; // Inject
 
-    // Modify constructor to use @Lazy for AuthenticationManager
+    // Update constructor
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           @Lazy AuthenticationManager authenticationManager, // Add @Lazy here
-                           JwtUtil jwtUtil) {
+                           @Lazy AuthenticationManager authenticationManager,
+                           JwtUtil jwtUtil,
+                           RevokedTokenRepository revokedTokenRepository) { // Add to constructor
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.revokedTokenRepository = revokedTokenRepository; // Assign
     }
 
     @Override
@@ -139,30 +146,33 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public TokenRefreshResponseDTO refreshToken(String refreshTokenValue) {
-        // 1. Validate the incoming refresh token (integrity, expiry)
-        if (!jwtUtil.validateToken(refreshTokenValue)) {
-            // This simple validation only checks expiry and signature based on current JwtUtil.
-            // For a robust rotation, if this token was already used (and we were tracking it),
-            // we might invalidate the entire session (all refresh tokens for the user).
-            throw new IllegalArgumentException("Invalid or expired refresh token.");
+        String jti = jwtUtil.extractJti(refreshTokenValue);
+
+        if (jti == null || revokedTokenRepository.existsByJti(jti)) { // Check if token JTI is in denylist
+            throw new IllegalArgumentException("Refresh token is revoked or invalid.");
         }
 
+        if (!jwtUtil.validateToken(refreshTokenValue)) {
+            throw new IllegalArgumentException("Invalid or expired refresh token.");
+        }
+        // ... (rest of the method: extract userEmail, loadUserDetails, generate new tokens) ...
         String userEmail = jwtUtil.extractUsername(refreshTokenValue);
         UserDetails userDetails;
         try {
-            userDetails = this.loadUserByUsername(userEmail); // Verifies user still exists and is valid
+            userDetails = this.loadUserByUsername(userEmail);
         } catch (UsernameNotFoundException e) {
             throw new IllegalArgumentException("User for the refresh token not found.", e);
         }
 
-        // Optional: Further checks if the refresh token is blacklisted/revoked.
-        // For now, we assume if it passes signature/expiry and user exists, it's good for one-time use in rotation.
-
-        // 2. Generate a NEW Access Token
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
+        String newRefreshToken = jwtUtil.generateRefreshToken(userDetails); // Rotate refresh token
 
-        // 3. Generate a NEW Refresh Token (Rotation)
-        String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
+        // Important: Add the OLD refresh token's JTI to the denylist AFTER successful validation and new token generation
+        // to prevent its reuse but allow the current operation to complete.
+        // The expiry for the denylist record should be the expiry of the OLD refresh token.
+        Date oldTokenExpiry = jwtUtil.extractExpiration(refreshTokenValue);
+        revokedTokenRepository.save(new RevokedToken(jti, oldTokenExpiry.toInstant()));
+
 
         return new TokenRefreshResponseDTO(newAccessToken, newRefreshToken, "Bearer");
     }
@@ -294,6 +304,65 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         // For now, a direct delete. If foreign key constraints prevent deletion due to related data,
         // this will fail at the DB level.
         userRepository.deleteById(userId);
+    }
+    
+    @Override
+    @Transactional
+    public void logoutUser(String refreshTokenValue) {
+        if (refreshTokenValue == null || refreshTokenValue.isEmpty()) {
+            return; // No token to invalidate
+        }
+
+        try {
+            String jti = jwtUtil.extractJti(refreshTokenValue);
+            Date expiryDate = jwtUtil.extractExpiration(refreshTokenValue); // Get expiry of the token being revoked
+
+            if (jti != null && expiryDate != null && !revokedTokenRepository.existsByJti(jti)) {
+                // Add to denylist only if not already there and valid structure
+                // The expiryDate for the RevokedToken record is the original expiry of the refresh token itself.
+                // This helps in cleaning up the RevokedToken table later.
+                revokedTokenRepository.save(new RevokedToken(jti, expiryDate.toInstant()));
+            }
+        } catch (Exception e) {
+            // Log error, but don't prevent logout flow if token is already malformed/expired
+            // For example, using logger: logger.warn("Error processing refresh token during logout: " + e.getMessage());
+        }
+        // The client should also clear its access token and the refresh token cookie.
+        // The backend's main job here is to blacklist the refresh token.
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateUserProfile(String authenticatedUserEmail, UserUpdateRequestDTO updateRequest) {
+        User user = userRepository.findByEmail(authenticatedUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + authenticatedUserEmail));
+
+        // Update name if provided
+        if (StringUtils.hasText(updateRequest.getName())) {
+            user.setName(updateRequest.getName());
+        }
+
+        // Update mobile number if provided and different
+        if (StringUtils.hasText(updateRequest.getMobileNo())) {
+            if (!user.getMobileNo().equals(updateRequest.getMobileNo())) {
+                // Check if the new mobile number is already taken by another user
+                if (userRepository.existsByMobileNo(updateRequest.getMobileNo())) {
+                    throw new IllegalArgumentException("Error: New mobile number is already in use by another account.");
+                }
+                user.setMobileNo(updateRequest.getMobileNo());
+            }
+        }
+
+        // Update address if provided
+        if (StringUtils.hasText(updateRequest.getAddress())) {
+            user.setAddress(updateRequest.getAddress());
+        }
+
+        // Note: Email and password updates are not handled here.
+        // MessProvidedUserId is also typically not updatable by the user themselves.
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponseDTO(updatedUser);
     }
     
 }

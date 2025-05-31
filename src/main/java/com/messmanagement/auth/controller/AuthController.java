@@ -112,4 +112,29 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse httpServletResponse) {
+
+        if (refreshToken != null) {
+            userService.logoutUser(refreshToken); // Call service to blacklist the token
+        }
+
+        // Instruct the browser to clear the refresh token cookie
+        ResponseCookie emptyRefreshTokenCookie = ResponseCookie.from("refreshToken", "") // Empty value
+                .httpOnly(true)
+                .secure(refreshTokenCookieSecure) // Use configured value
+                .path("/api/v1/auth") // Must match the path used when setting the cookie
+                .maxAge(0) // Expire immediately
+                .sameSite("Strict")
+                .build();
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, emptyRefreshTokenCookie.toString());
+
+        // Also, potentially clear any other session-related cookies if you have them.
+
+        return ResponseEntity.ok("Logout successful. Please clear your access token.");
+    }
+    
 }

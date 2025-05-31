@@ -10,6 +10,7 @@ import com.messmanagement.user.dto.AdminCreateUserRequestDTO;
 import com.messmanagement.user.dto.AdminUpdateUserRequestDTO;
 import com.messmanagement.user.dto.UserRegistrationRequestDTO;
 import com.messmanagement.user.dto.UserResponseDTO;
+import com.messmanagement.user.dto.UserUpdateRequestDTO;
 
 public interface UserService {
     UserResponseDTO registerStudent(UserRegistrationRequestDTO registrationRequest);
@@ -29,5 +30,8 @@ public interface UserService {
     UserResponseDTO adminUpdateUser(Long userId, AdminUpdateUserRequestDTO updateRequest);
 
     void deleteUserById(Long userId);
-
+    
+    void logoutUser(String refreshTokenValue); 
+    
+    UserResponseDTO updateUserProfile(String authenticatedUserEmail, UserUpdateRequestDTO updateRequest); 
 }
