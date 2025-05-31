@@ -2,11 +2,12 @@ package com.messmanagement.auth.filter;
 
 import java.io.IOException;
 
-import org.springframework.lang.NonNull; // Your UserDetailsService implementation
+import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource; // Import @Lazy
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,14 +18,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserServiceImpl userDetailsService; // Injecting your UserDetailsService
+    private final UserServiceImpl userDetailsService; // Will be lazily injected
+
+    // Manually create constructor to use @Lazy
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, @Lazy UserServiceImpl userDetailsService) {
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -38,39 +43,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response); // If no token, pass to the next filter
+            filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7); // "Bearer ".length()
+        jwt = authHeader.substring(7);
         try {
-            userEmail = jwtUtil.extractUsername(jwt); // Extract email from token
+            userEmail = jwtUtil.extractUsername(jwt);
 
-            // Check if email is present and if the user is not already authenticated
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail); // Lazy dependency resolved here
 
                 if (jwtUtil.validateToken(jwt, userDetails)) {
-                    // If token is valid, create an authentication token
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
-                            null, // Credentials are not needed here as JWT is already validated
+                            null,
                             userDetails.getAuthorities()
                     );
-                    // Set details for the authentication token
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Token validation failed (e.g. expired, malformed, signature error)
-            // We can log this error. For now, we'll just let the request proceed without authentication.
-            // The SecurityContext will remain unauthenticated, and access to protected resources will be denied.
-            // Consider setting an error attribute on the request or directly handling the response for specific JWT errors if needed.
             logger.warn("JWT Token validation error: " + e.getMessage());
         }
-
-        filterChain.doFilter(request, response); // Continue with the filter chain
+        filterChain.doFilter(request, response);
     }
 }
