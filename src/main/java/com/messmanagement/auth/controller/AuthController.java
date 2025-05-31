@@ -1,5 +1,7 @@
 package com.messmanagement.auth.controller;
 
+import com.messmanagement.auth.dto.LoginRequestDTO; 
+import com.messmanagement.auth.dto.LoginResponseDTO;
 import com.messmanagement.user.dto.UserRegistrationRequestDTO;
 import com.messmanagement.user.dto.UserResponseDTO;
 import com.messmanagement.user.service.UserService;
@@ -31,6 +33,19 @@ public class AuthController {
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
-    // Login endpoint (/login) will be added here later
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> loginUser(
+        /*@Valid*/ @RequestBody LoginRequestDTO loginRequest) {
+        // The @Valid annotation will trigger validation for LoginRequestDTO if configured
+
+        LoginResponseDTO loginResponse = userService.loginUser(loginRequest);
+        // Note on refresh token:
+        // The project plan (source 38, 119) suggests HttpOnly cookies for refresh tokens.
+        // We currently return it in the response body.
+        // We can refine this later to set it as an HttpOnly cookie from the backend.
+        // For example, using HttpServletResponse.addCookie(...)
+        return ResponseEntity.ok(loginResponse);
+    }
+    
     // Password reset endpoints (/forgot-password, /reset-password) will also be added here
 }
