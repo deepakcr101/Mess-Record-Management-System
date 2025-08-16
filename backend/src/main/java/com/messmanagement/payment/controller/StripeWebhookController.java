@@ -85,6 +85,7 @@ return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Webhook err
         return ResponseEntity.ok("Webhook received");
     }
 
+
     private void handleCheckoutSessionCompleted(Session session) {
         logger.info("Handling checkout.session.completed for session ID: {}", session.getId());
         // This event is useful for linking our records with Stripe's records.
