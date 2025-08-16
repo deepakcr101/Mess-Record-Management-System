@@ -142,14 +142,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // Check for existing active or pending subscriptions
         // Consider fetching only PENDING_PAYMENT or truly ACTIVE (end_date in future)
         Optional<Subscription> existingSubscriptionOpt = subscriptionRepository
-                .findByUserAndStatusIn(user, Arrays.asList(SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING_PAYMENT));
+                .findByUserAndStatusIn(user, Arrays.asList(SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING));
         
         if (existingSubscriptionOpt.isPresent()) {
             Subscription sub = existingSubscriptionOpt.get();
             // Only prevent new purchase if truly active and not past end date, or still pending
             if (sub.getStatus() == SubscriptionStatus.ACTIVE && (sub.getEndDate() == null || !sub.getEndDate().isBefore(LocalDate.now()))) {
                  throw new IllegalStateException("User already has an active subscription ending on " + sub.getEndDate() + ". Cannot purchase a new one yet.");
-            } else if (sub.getStatus() == SubscriptionStatus.PENDING_PAYMENT) {
+            } else if (sub.getStatus() == SubscriptionStatus.PENDING) {
                 // TODO: Consider if you should try to retrieve and return the existing Stripe Checkout Session ID
                 // if it's still valid and for the same plan details. This is more complex.
                 // For now, prevent new checkout if one is already pending.
@@ -175,7 +175,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         newSubscription.setUser(user);
         newSubscription.setStartDate(startDate);
         newSubscription.setEndDate(endDate);
-        newSubscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
+        newSubscription.setStatus(SubscriptionStatus.PENDING);
         newSubscription.setAmountPaid(actualAmountForThisPlan); // This is the expected amount
         // newSubscription.setStripePriceId(stripePriceId); // Store the Stripe Price ID used!
         // newSubscription.setPlanName("Monthly Plan"); // Store the plan name from DTO or Stripe Product!
@@ -303,4 +303,25 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new IllegalStateException("Subscription cannot be cancelled as it's not active. Current status: " + subscription.getStatus());
         }
     }
+
+    // In SubscriptionServiceImpl.java
+
+@Override
+public void linkStripeId(Long localSubscriptionId, String stripeSubscriptionId) {
+    Subscription subscription = subscriptionRepository.findById(localSubscriptionId)
+        .orElseThrow(() -> new ResourceNotFoundException("Subscription not found with id: " + localSubscriptionId));
+    subscription.setStripeSubscriptionId(stripeSubscriptionId);
+    subscriptionRepository.save(subscription);
+}
+
+@Override
+public void handleFailedPayment(String stripeSubscriptionId) {
+    Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId)
+        .orElseThrow(() -> new ResourceNotFoundException("Subscription not found with Stripe ID: " + stripeSubscriptionId));
+    
+    // Set status to something like PAYMENT_FAILED or EXPIRED
+    subscription.setStatus(SubscriptionStatus.PAYMENT_FAILED); 
+    subscriptionRepository.save(subscription);
+    // Optionally, send a notification to the user
+}
 }

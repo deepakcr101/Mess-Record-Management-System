@@ -49,6 +49,19 @@ public interface SubscriptionService {
      * @param startDate The start date of the subscription.
      * @param endDate The end date of the subscription.
      */
+    /**
+     * Links a local subscription record to a Stripe subscription ID.
+     * @param localSubscriptionId The ID of the subscription in your database.
+     * @param stripeSubscriptionId The subscription ID from Stripe.
+     */
+    void linkStripeId(Long localSubscriptionId, String stripeSubscriptionId);
+
+    /**
+     * Handles a failed payment for a subscription.
+     * @param stripeSubscriptionId The subscription ID from Stripe.
+     */
+    void handleFailedPayment(String stripeSubscriptionId);
+    
     void activateSubscription(String stripeSubscriptionId, String stripeCustomerId, String paymentTransactionId, BigDecimal amountPaid, LocalDate startDate, LocalDate endDate);
 
     /**
@@ -61,5 +74,5 @@ public interface SubscriptionService {
 
     // More methods might be needed, e.g., to handle failed payments, subscription updates from Stripe webhooks, etc.
 
-    MySubscriptionStatusDTO getDetailedUserSubscriptionStatus(String userEmail);
+    MySubscriptionStatusDTO getDetailedUserSubscriptionStatus(String userEmail); 
 }

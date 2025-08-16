@@ -1,8 +1,9 @@
 package com.messmanagement.subscription.entity;
 
 public enum SubscriptionStatus {
+    PENDING,
     ACTIVE,
-    EXPIRED,
     CANCELLED,
-    PENDING_PAYMENT // As per plan [cite: 50]
+    EXPIRED,
+    PAYMENT_FAILED // Add this new status
 }
